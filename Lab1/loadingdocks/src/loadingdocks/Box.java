@@ -14,7 +14,7 @@ public class Box extends Entity {
 	 *****************************/
 	
 	public void getPicked() {
-		//TODO
+		//TODO useless the way I did it
 	}
 	
 	public void getDropped(Point newPoint) {

@@ -23,7 +23,10 @@ public class Agent extends Entity {
 	 **********************/
 	
 	public void agentDecision() {
-	  if(isWall()) {
+	  if(this.cargo == null && this.direction == 180 && this.point.x == 0 && this.point.y == 0) {
+		  this.direction = 90;
+		  //TODO chill > I cant make it stop unless I can memorize what I did
+	  } else if(isWall()) {
 		  this.direction = 0;
 	  } 
 	  else if(isFreeCell()) {
@@ -31,8 +34,9 @@ public class Agent extends Entity {
 	  } else if(isRamp()) {
 		  //TPDP pickup
 		  Entity isItABox = Board.getEntity(aheadPosition());
-		  Box redBox = (Box) isItABox; //this is dumb just for lulz
-		  this.cargo = redBox;
+		  Box okayItsABox = (Box) isItABox; 
+		  this.cargo = okayItsABox;
+		  //this.cargo.getPicked();
 		  this.direction = 270;
 	  } else if(isShelf()) {
 		  //TODO place
