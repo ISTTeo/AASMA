@@ -41,6 +41,16 @@ public class Agent extends Entity {
 		Point ahead = aheadPosition();
 		return ahead.x<0 || ahead.y<0 || ahead.x>=Board.nX || ahead.y>=Board.nY;
 	}
+	
+	protected boolean isRamp() {
+	  Point ahead = aheadPosition();
+	  return Board.getBlock(ahead).shape.equals(Shape.ramp);
+	}
+	
+	protected boolean isShelf() {
+	  Point ahead = aheadPosition();
+	  return Board.getBlock(ahead).shape.equals(Shape.shelf);
+	}
 
 	/**********************/
 	/**** C: actuators ****/
