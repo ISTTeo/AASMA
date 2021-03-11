@@ -36,6 +36,12 @@ public class Agent extends Entity {
 		  this.direction = 270;
 	  } else if(isShelf()) {
 		  //TODO place
+		  if(this.cargo != null) {
+			  
+			  this.cargo.getDropped(aheadPosition());
+			  
+			  this.cargo = null;
+		  }
 		  this.direction = 180;
 	  }
 	}
@@ -77,6 +83,7 @@ public class Agent extends Entity {
 		point = ahead;
 		
 		if(this.cargo != null) {
+			//TODO should the agent bring the box after him? Cant be in same pos right?
 			this.cargo.getMoved(oldPos);
 		}
 	}
