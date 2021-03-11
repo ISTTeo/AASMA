@@ -23,7 +23,18 @@ public class Agent extends Entity {
 	 **********************/
 	
 	public void agentDecision() {
-	  if(isFreeCell()) moveAhead();
+	  if(isWall()) {
+		  this.direction = 0;
+	  } 
+	  else if(isFreeCell()) {
+		  moveAhead();
+	  } else if(isRamp()) {
+		  //TPDP pickup
+		  this.direction = 270;
+	  } else if(isShelf()) {
+		  //TODO place
+		  this.direction = 180;
+	  }
 	}
 	
 	/********************/
