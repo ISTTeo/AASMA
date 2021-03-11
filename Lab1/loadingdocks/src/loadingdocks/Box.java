@@ -21,7 +21,8 @@ public class Box extends Entity {
 		//TODO
 	}
 	
-	public void getMoved() {
-		//TODO
+	public void getMoved(Point newPoint) {
+		Board.updateEntityPosition(this.point, newPoint);
+		this.point = newPoint;
 	}
 }

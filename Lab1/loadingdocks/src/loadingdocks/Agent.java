@@ -30,6 +30,9 @@ public class Agent extends Entity {
 		  moveAhead();
 	  } else if(isRamp()) {
 		  //TPDP pickup
+		  Entity isItABox = Board.getEntity(aheadPosition());
+		  Box redBox = (Box) isItABox; //this is dumb just for lulz
+		  this.cargo = redBox;
 		  this.direction = 270;
 	  } else if(isShelf()) {
 		  //TODO place
@@ -68,9 +71,14 @@ public class Agent extends Entity {
 	/**********************/
 	/* Move agent forward */
 	public void moveAhead() {
+		Point oldPos = this.point;
 		Point ahead = aheadPosition();
 		Board.updateEntityPosition(point,ahead);
 		point = ahead;
+		
+		if(this.cargo != null) {
+			this.cargo.getMoved(oldPos);
+		}
 	}
 	
 	/**********************/
