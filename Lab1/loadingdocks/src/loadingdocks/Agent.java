@@ -12,7 +12,7 @@ public class Agent extends Entity {
 
 	public int direction = 90;
 	public Box cargo;
-
+	private boolean hasFinished = false;
 	public Agent(Point point, Color color){ 
 		super(point, color);
 	} 
@@ -23,9 +23,12 @@ public class Agent extends Entity {
 	 **********************/
 	
 	public void agentDecision() {
-	  if(this.cargo == null && this.direction == 180 && this.point.x == 0 && this.point.y == 0) {
+	  if(this.hasFinished) {
+		 //Chill
+	  } else if(this.cargo == null && this.direction == 180 && this.point.x == 0 && this.point.y == 0) {
 		  this.direction = 90;
-		  //TODO chill > I cant make it stop unless I can memorize what I did
+		  this.hasFinished = true;
+		  
 	  } else if(isWall()) {
 		  this.direction = 0;
 	  } 
@@ -36,10 +39,9 @@ public class Agent extends Entity {
 		  Entity isItABox = Board.getEntity(aheadPosition());
 		  Box okayItsABox = (Box) isItABox; 
 		  this.cargo = okayItsABox;
-		  //this.cargo.getPicked();
 		  this.direction = 270;
+		  this.cargo.getPicked(this.point);
 	  } else if(isShelf()) {
-		  //TODO place
 		  if(this.cargo != null) {
 			  
 			  this.cargo.getDropped(aheadPosition());
@@ -81,14 +83,13 @@ public class Agent extends Entity {
 	/**********************/
 	/* Move agent forward */
 	public void moveAhead() {
-		Point oldPos = this.point;
 		Point ahead = aheadPosition();
 		Board.updateEntityPosition(point,ahead);
 		point = ahead;
 		
 		if(this.cargo != null) {
 			//TODO should the agent bring the box after him? Cant be in same pos right?
-			this.cargo.getMoved(oldPos);
+			this.cargo.getMoved(ahead);
 		}
 	}
 	
