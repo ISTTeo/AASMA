@@ -42,7 +42,7 @@ public class Agent extends Entity {
 			  rotateRandomly();
 		  }
 	  } else if(isShelf()) {
-		  if(cargo != null && shelfColor().equals(cargo.color)) {
+		  if(cargo != null && shelfColor().equals(cargoColor())) {
 			  dropBox();
 		  } else {
 			  rotateRandomly();
@@ -63,8 +63,8 @@ public class Agent extends Entity {
 	}
 	
 	/* Return the color of the box */
-	//TODO returns Color
-	public void cargoColor() {
+	public Color cargoColor() {
+		return cargo.color;
 	}
 
 	/* Return the color of the shelf ahead or 0 otherwise */
