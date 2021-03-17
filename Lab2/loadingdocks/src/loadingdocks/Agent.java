@@ -25,8 +25,33 @@ public class Agent extends Entity {
 	
 	public void agentDecision() {
 	  ahead = aheadPosition();
-		//TODO
-	}
+	  
+	  if (isWall()) {
+		  rotateRandomly();
+	  } else if(isFreeCell()) {
+		  if(Math.random() > .95) 
+			  rotateRandomly();
+		  else
+			  moveAhead(); //Introduce a little anarchy
+	  }
+	  else if(isRamp()) {
+		  if(isBoxAhead()) {
+			  grabBox();
+			  rotateRandomly();
+		  } else {
+			  rotateRandomly();
+		  }
+	  } else if(isShelf()) {
+		  if(cargo != null && shelfColor().equals(cargo.color)) {
+			  dropBox();
+		  } else {
+			  rotateRandomly();
+		  }
+	  } else {
+		  //Agent ahead
+		  rotateRandomly();
+	  }	
+	 }
 	
 	/********************/
 	/**** B: sensors ****/
@@ -43,8 +68,11 @@ public class Agent extends Entity {
 	}
 
 	/* Return the color of the shelf ahead or 0 otherwise */
-	//TODO returns Color
 	public Color shelfColor(){
+		if(isShelf())
+			return Board.getBlock(ahead).color;
+		return null;
+		//TODO returns Color NULL is to be returned right?
 	}
 
 	/* Check if the cell ahead is floor (which means not a wall, not a shelf nor a ramp) and there are any robot there */
@@ -81,9 +109,17 @@ public class Agent extends Entity {
 	/**** C: actuators ****/
 	/**********************/
 
-	//TODO
-	/* Rotate agent to right */
+	/* Rotate agent randomly */
 	public void rotateRandomly() {
+		double rnd = Math.random();
+		if(rnd > .75)
+			rotateRight();
+		else if(rnd > .5) {
+			rotateRight();
+			rotateRight();
+		} else if (rnd > .25) {
+			rotateLeft();
+		}
 	}
 	
 	/* Rotate agent to right */
