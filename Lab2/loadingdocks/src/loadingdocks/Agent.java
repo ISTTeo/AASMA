@@ -24,6 +24,10 @@ public class Agent extends Entity {
 	 **********************/
 	
 	public void agentDecision() {
+		
+	  if(Board.boxesDropped==8) 
+		  return;
+	  
 	  ahead = aheadPosition();
 	  
 	  if (isWall()) {
@@ -149,6 +153,8 @@ public class Agent extends Entity {
 	public void dropBox() {
 		cargo.dropBox(ahead);
 	    cargo = null;
+	    
+	    Board.boxesDropped++;
 	}
 	
 	/**********************/

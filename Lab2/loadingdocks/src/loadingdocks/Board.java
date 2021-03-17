@@ -20,7 +20,9 @@ public class Board {
 	private static List<Agent> robots;
 	private static List<Box> boxes;
 	
-	
+	public static int boxesDropped = 0;
+	public static boolean notFinished = true;
+	public static int nSteps = 0;
 	/****************************
 	 ***** A: SETTING BOARD *****
 	 ****************************/
@@ -98,6 +100,11 @@ public class Board {
 	    public void run() {
 	    	while(true){
 	    		step();
+	    		nSteps++;
+	    		if(notFinished && boxesDropped==8) {
+	    			System.out.println("Finished after: " + String.valueOf(nSteps));
+	    			notFinished = false;
+	    		}
 				try {
 					sleep(time);
 				} catch (InterruptedException e) {
