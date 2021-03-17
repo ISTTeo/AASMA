@@ -34,9 +34,9 @@ public class Agent extends Entity {
 		  rotateRandomly();
 	  } else if(isFreeCell()) {
 		  if(Math.random() > .95) 
-			  rotateRandomly();
+			  rotateRandomly(); //Introduce a little anarchy
 		  else
-			  moveAhead(); //Introduce a little anarchy
+			  moveAhead(); 
 	  }
 	  else if(isRamp()) {
 		  if(!cargo() && isBoxAhead()) {
@@ -48,11 +48,12 @@ public class Agent extends Entity {
 	  } else if(isShelf()) {
 		  if(cargo != null && shelfColor().equals(cargoColor())) {
 			  dropBox();
+			  //TODO should we be able to identify empty shelves?
 		  } else {
 			  rotateRandomly();
 		  }
 	  } else {
-		  //Agent ahead
+		  //Agent ahead or other situations
 		  rotateRandomly();
 	  }	
 	 }
