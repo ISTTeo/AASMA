@@ -50,7 +50,7 @@ public class Board {
 				board[pshelves[k].x+i][pshelves[k].y] = new Block(Shape.shelf, colors[k]);
 		
 		/** C: create agents */
-		int nrobots = 1;
+		int nrobots = 3;
 		robots = new ArrayList<Agent>();
 		for(int j=0; j<nrobots; j++) robots.add(new Agent(new Point(0,j), Color.pink));
 		
