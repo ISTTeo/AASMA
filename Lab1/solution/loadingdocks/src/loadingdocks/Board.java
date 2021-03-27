@@ -14,15 +14,15 @@ public class Board {
 
 	/** The environment */
 
+	public enum Turtle { agent, box }
+	
 	public static int nX = 10, nY = 10;
 	private static Block[][] board;
 	private static Entity[][] objects;
 	private static List<Agent> robots;
 	private static List<Box> boxes;
 	
-	public static int boxesDropped = 0;
-	public static boolean notFinished = true;
-	public static int nSteps = 0;
+	
 	/****************************
 	 ***** A: SETTING BOARD *****
 	 ****************************/
@@ -36,13 +36,14 @@ public class Board {
 				board[i][j] = new Block(Shape.free, Color.lightGray);
 				
 		/** B: create ramp, boxes and shelves */
-		int rampX = 4, rampY = 3;
+		int rampX = 3, rampY = 3;
 		Color[] colors = new Color[] {Color.red, Color.blue, Color.green, Color.yellow};
 		boxes = new ArrayList<Box>();
-		for(int i=rampX, k=0; i<2*rampX; i++) {
+		for(int i=rampX, k=0; i<2*rampX+1; i++) {
 			for(int j=0; j<rampY; j++) {
 				board[i][j] = new Block(Shape.ramp, Color.gray);
 				if((j==0||j==1) && (i==(rampX+1)||i==(rampX+2))) continue;
+				else if(boxes.size() == 1) continue;
 				else boxes.add(new Box(new Point(i,j), colors[k++%4]));
 			}
 		}
@@ -52,7 +53,7 @@ public class Board {
 				board[pshelves[k].x+i][pshelves[k].y] = new Block(Shape.shelf, colors[k]);
 		
 		/** C: create agents */
-		int nrobots = 3;
+		int nrobots = 1;
 		robots = new ArrayList<Agent>();
 		for(int j=0; j<nrobots; j++) robots.add(new Agent(new Point(0,j), Color.pink));
 		
@@ -100,11 +101,6 @@ public class Board {
 	    public void run() {
 	    	while(true){
 	    		step();
-	    		nSteps++;
-	    		if(notFinished && boxesDropped==8) {
-	    			System.out.println("Finished after: " + String.valueOf(nSteps));
-	    			notFinished = false;
-	    		}
 				try {
 					sleep(time);
 				} catch (InterruptedException e) {

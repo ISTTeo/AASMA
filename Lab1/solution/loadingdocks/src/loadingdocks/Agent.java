@@ -12,6 +12,7 @@ public class Agent extends Entity {
 
 	public int direction = 90;
 	public Box cargo;
+	public int state=0;
 	private Point ahead;
 
 	public Agent(Point point, Color color){ 
@@ -22,71 +23,62 @@ public class Agent extends Entity {
 	/**********************
 	 **** A: decision ***** 
 	 **********************/
-	
 	public void agentDecision() {
+		ahead = aheadPosition();
+		if(state==7) return;
+		else if(state==2) {
+			rotateLeft();
+			state++;
+		}
+		else if(isWall() && state==3) {
+			rotateRight();
+			state++;
+		}
+		else if(isWall() && state==5) {
+			rotateLeft();
+			state++;
+		}
+		else if(isWall() && state==6) {
+			direction=90;
+			state++;
+		}
+		else if(isShelf() && state==5) rotateLeft();
+		else if(isShelf()) {
+			dropBox();
+			state++;
+		}
+		else if(isRamp() && isBoxAhead()) {
+			grabBox();
+			state++;
+		}
+		else if(isRamp() && state == 1) {
+			rotateLeft();
+			state++;
+		}
+		else if(isFreeCell()) moveAhead();
 		
-	  if(Board.boxesDropped==8) 
-		  return;
-	  
-	  ahead = aheadPosition();
-	  
-	  if (isWall()) {
-		  rotateRandomly();
-	  } else if(isFreeCell()) {
-		  if(Math.random() > .95) 
-			  rotateRandomly(); //Introduce a little anarchy
-		  else
-			  moveAhead(); 
-	  }
-	  else if(isRamp()) {
-		  if(!cargo() && isBoxAhead()) {
-			  grabBox();
-			  rotateRandomly();
-		  } else {
-			  rotateRandomly();
-		  }
-	  } else if(isShelf()) {
-		  if(cargo != null && shelfColor().equals(cargoColor())) {
-			  dropBox();
-			  //TODO should we be able to identify empty shelves?
-		  } else {
-			  rotateRandomly();
-		  }
-	  } else {
-		  //Agent ahead or other situations
-		  rotateRandomly();
-	  }	
-	 }
+	}
 	
 	/********************/
 	/**** B: sensors ****/
 	/********************/
-	
 	/* Check if agent is carrying box */
 	public boolean cargo() {
 		return cargo != null;
 	}
 	
-	/* Return the color of the box */
-	public Color cargoColor() {
-		return cargo.color;
-	}
-
-	/* Return the color of the shelf ahead or 0 otherwise */
-	public Color shelfColor(){
-		if(isShelf())
-			return Board.getBlock(ahead).color;
-		return null;
-		//TODO returns Color NULL is to be returned right?
-	}
-
 	/* Check if the cell ahead is floor (which means not a wall, not a shelf nor a ramp) and there are any robot there */
-	public boolean isFreeCell() {
-	  if(Board.getBlock(ahead).shape.equals(Shape.free))
-		  if(Board.getEntity(ahead)==null) return true;
-	  return false;
+	protected boolean isFreeCell() {
+	  Point ahead = aheadPosition();
+	  return Board.getBlock(ahead).shape.equals(Shape.free);
 	}
 
+	/* Check if the cell ahead is a wall */
+	protected boolean isWall() {
+		Point ahead = aheadPosition();
+		return ahead.x<0 || ahead.y<0 || ahead.x>=Board.nX || ahead.y>=Board.nY;
+	}
+	
 	/* Check if the cell ahead contains a box */
 	public boolean isBoxAhead(){
 		Entity entity = Board.getEntity(ahead);
@@ -105,27 +97,9 @@ public class Agent extends Entity {
 	  return block.shape.equals(Shape.ramp);
 	}
 
-	/* Check if the cell ahead is a wall */
-	private boolean isWall() {
-		return ahead.x<0 || ahead.y<0 || ahead.x>=Board.nX || ahead.y>=Board.nY;
-	}
-
 	/**********************/
 	/**** C: actuators ****/
 	/**********************/
-
-	/* Rotate agent randomly */
-	public void rotateRandomly() {
-		double rnd = Math.random();
-		if(rnd > .75)
-			rotateRight();
-		else if(rnd > .5) {
-			rotateRight();
-			rotateRight();
-		} else if (rnd > .25) {
-			rotateLeft();
-		}
-	}
 	
 	/* Rotate agent to right */
 	public void rotateRight() {
@@ -143,7 +117,7 @@ public class Agent extends Entity {
 		if(cargo()) cargo.moveBox(ahead);
 		point = ahead;
 	}
-
+	
 	/* Cargo box */
 	public void grabBox() {
 	  cargo = (Box) Board.getEntity(ahead);
@@ -154,8 +128,6 @@ public class Agent extends Entity {
 	public void dropBox() {
 		cargo.dropBox(ahead);
 	    cargo = null;
-	    
-	    Board.boxesDropped++;
 	}
 	
 	/**********************/
