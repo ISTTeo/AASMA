@@ -9,14 +9,16 @@ def turtleCide(pastCloses,observation,sold,action):
     min20 = min(pastCloses[-20:])
     max20 = max(pastCloses[-20:])
 
-    breakout = False
-    if(lastClose > max20 or  lastClose < min20): #Looks for breakout
-        breakout = True #useless
+    if(lastClose > max20):
         if(sold):
             action = 1 #buy
             sold = False #smarter way to do this just flip 0 and 1
-        else:
-            action = 0
+    elif(lastClose < min20):
+        if(not sold):
+            action = 0#sell
             sold = True
+
+    else:#hold
+        action = 0 if sold else 1
 
     return action, sold

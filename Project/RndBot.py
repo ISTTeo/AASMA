@@ -1,11 +1,9 @@
 import random
 def rndCide(pastCloses,observation,sold,action):
-    action =random.getrandbits(1)
-    if(sold and action==1):
+    action = random.getrandbits(1)
+    if(action==1):
         sold = False
-    elif(not sold and action==0):
+    else:
         sold = True
 
     return action, sold
-
-
