@@ -7,7 +7,7 @@ from gym_anytrading.envs import TradingEnv, ForexEnv, StocksEnv, Actions, Positi
 from gym_anytrading.datasets import FOREX_EURUSD_1H_ASK, STOCKS_GOOGL
 
 
-def display(decide):
+def display(agentType):
     df = pd.read_csv("FOREX_EURUSD_1H_ASK_DAILY.csv")
     env = gym.make('forex-v0', df=df,frame_bound=(21, 200), window_size=1)
 
@@ -16,9 +16,10 @@ def display(decide):
     sold = False
     action = 0
     profit = []
+    agent = agentType()
 
     while True:
-        action, sold = decide(pastCloses,observation,sold,action)
+        action, sold = agent.decide(pastCloses,observation,sold,action)
 
         profit.append(env._total_profit)
 
