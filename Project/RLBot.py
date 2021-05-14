@@ -2,26 +2,43 @@ import math
 import numpy as np
 import random 
 import numpy.random as rnd 
-
+from enum import Enum
 from Agent import Agent
-
+timeInterval = [10,50]
+percentages = [0,2,4,6,8,10,666]
+percentagesShort = [0,2,4,666]
+percentagesLong = [0,4,8,12,666]
+#percentages = [10,20,60,70,80,90,95,666]
 
 class Actions(Enum):
     Sell = 0
     Buy = 1
 
-timeInterval = [10,50]
-percentages = [0,1,2,3,4,5,6,7,8,9,10,666]
-qEntries = []
-for k in range(len(percentages)):
-    qEntries.append(str((timeInterval[0],percentages[k],timeInterval[1],percentages[k],0)))
-    qEntries.append(str((timeInterval[0],percentages[k],timeInterval[1],percentages[k],1)))
-    qEntries.append(str((timeInterval[0],percentages[k],timeInterval[1],percentages[k],0)))
-    qEntries.append(str((timeInterval[0],percentages[k],timeInterval[1],percentages[k],1)))
-qTable = {}
+def initQ():
 
-for key in qEntries:
-    qTable[key] = np.array([0,0])
+    qEntries = []
+    for k in range(len(percentagesShort)):
+        for i in range(len(percentagesLong)):
+            qEntries.append(str((timeInterval[0],percentagesShort[k],timeInterval[1],percentagesLong[i],0)))
+            qEntries.append(str((timeInterval[0],-percentagesShort[k],timeInterval[1],-percentagesLong[i],0)))
+            qEntries.append(str((timeInterval[0],percentagesShort[k],timeInterval[1],-percentagesLong[i],0)))
+            qEntries.append(str((timeInterval[0],-percentagesShort[k],timeInterval[1],percentagesLong[i],0)))
+            qEntries.append(str((timeInterval[0],percentagesShort[k],timeInterval[1],percentagesLong[i],1)))
+            qEntries.append(str((timeInterval[0],-percentagesShort[k],timeInterval[1],-percentagesLong[i],1)))
+            qEntries.append(str((timeInterval[0],percentagesShort[k],timeInterval[1],-percentagesLong[i],1)))
+            qEntries.append(str((timeInterval[0],-percentagesShort[k],timeInterval[1],percentagesLong[i],1)))
+        
+
+
+    qTable = {}
+
+    for key in qEntries:
+        qTable[key] = np.array([0,0])
+    
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    print(qTable)
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    return qTable
 
 def egreedy(Q, eps=0.1):
     N = Q.shape[0]
@@ -37,7 +54,9 @@ def egreedy(Q, eps=0.1):
             prob[i] = 1/len(min_indexes[0])
         return rnd.choice(N, p = prob)
 
-def qlearning(Q, lr, gamma, n, prices, index):
+def qLearning(lr, gamma, n, prices, index):
+
+    Q = initQ()
 
     s = getState(prices, index, 1)
     sold = 1
@@ -67,18 +86,30 @@ def hasTraded(action, sold):
     return False
 
 
+
 def getState(prices, index, sold):
-    var1 = round((prices[index]/prices[index - timeInterval[0]]) * 100)
-    if(var1 > 10):
+    var1 = round((prices[index]/prices[index - timeInterval[0]]) * 100 - 100)
+    
+    var1 = (min(percentagesShort, key=lambda x:abs(x-var1)))
+    if(var1<0):
+        i *= -1
+    
+    if(abs(var1) > percentagesShort[-2]):
         var1 = 666
     
-    var2 = round((prices[index]/prices[index - timeInterval[1]]) * 100)
-    if(var2 > 10):
+    var2 = round((prices[index]/prices[index - timeInterval[1]]) * 100 - 100)
+
+    var2 = min(percentagesLong, key=lambda x:abs(x-var2))
+    
+    if(var2<0):
+        var2 *= -1
+    
+    if(abs(var2) > percentagesLong[-2]):
         var2 = 666
 
     return str((timeInterval[0], var1, timeInterval[1], var2, sold))
 
-
+#Roubado ao ambiente depois mudar sidjfaisdjfsa]
 def reward(action, sold, prices, index, last_trade):
     step_reward = 0
 
@@ -101,13 +132,30 @@ def reward(action, sold, prices, index, last_trade):
 class RLBot(Agent):
     def __init__(self):
         self.state = []
-        self.Q = []
-
-    def decide(self, pastCloses, observation, sold, action, env):
+        self.Q = initQ()
+        self.lastState = None
+        self.lastActionIndex = 0
+        self.lastTrade = 0
+    
+    def decide(self, pastCloses, observation, sold, action,iterIndex, prices, env=None):
         action = random.getrandbits(1)
+    
         if(action==0):
             sold = True
         else:
             sold = False
+        
+        #TODO Cant depend on lastState 
+        currentState = getState(prices,iterIndex,0)
+        if(self.lastState):
+            currentState = getState(prices,iterIndex,self.lastState[-1])
+            lastState = str(self.lastState)
+
+            r = reward(self.lastActionIndex,self.lastState[-1],prices,iterIndex, self.lastTrade)
+            Q[lastState][lastActionIndex] =  Q[lastState][lastActionIndex] + lr * (r + gamma *max(Q[currentState])  - Q[lastState][lastActionIndex])
+
+        self.lastActionIndex = action
+        self.lastState = currentState
+        self.lastTrade = prices[iterIndex]
 
         return action, sold
