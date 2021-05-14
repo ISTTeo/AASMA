@@ -4,11 +4,14 @@ import random
 import numpy.random as rnd 
 from enum import Enum
 from Agent import Agent
+
+
 timeInterval = [10,50]
 percentages = [0,2,4,6,8,10,666]
 percentagesShort = [0,2,4,666]
 percentagesLong = [0,4,8,12,666]
-#percentages = [10,20,60,70,80,90,95,666]
+lr = 0.1
+gamma = 0.9
 
 class Actions(Enum):
     Sell = 0
@@ -54,7 +57,7 @@ def egreedy(Q, eps=0.1):
             prob[i] = 1/len(min_indexes[0])
         return rnd.choice(N, p = prob)
 
-def qLearning(lr, gamma, n, prices, index):
+def qLearning(n, prices, index):
 
     Q = initQ()
 
@@ -85,14 +88,12 @@ def hasTraded(action, sold):
     
     return False
 
-
-
 def getState(prices, index, sold):
     var1 = round((prices[index]/prices[index - timeInterval[0]]) * 100 - 100)
     
     var1 = (min(percentagesShort, key=lambda x:abs(x-var1)))
     if(var1<0):
-        i *= -1
+        var1 *= -1
     
     if(abs(var1) > percentagesShort[-2]):
         var1 = 666
@@ -134,28 +135,25 @@ class RLBot(Agent):
         self.state = []
         self.Q = initQ()
         self.lastState = None
-        self.lastActionIndex = 0
+        self.lastAction = 0
         self.lastTrade = 0
     
-    def decide(self, pastCloses, observation, sold, action,iterIndex, prices, env=None):
-        action = random.getrandbits(1)
-    
-        if(action==0):
-            sold = True
-        else:
-            sold = False
-        
-        #TODO Cant depend on lastState 
-        currentState = getState(prices,iterIndex,0)
+    def decide(self, pastCloses, observation, sold):
+        price = observation[0][0]
+        pastCloses.append(price)
+        currentState = getState(pastCloses, len(pastCloses) - 1, sold)
+
         if(self.lastState):
-            currentState = getState(prices,iterIndex,self.lastState[-1])
-            lastState = str(self.lastState)
+            r = reward(self.lastAction, sold, pastCloses, len(pastCloses) - 2, self.lastTrade)
+            self.Q[lastState][lastAction] =  self.Q[lastState][lastAction] + lr * (r + gamma * max(self.Q[currentState]) - self.Q[lastState][lastAction])
+        
+        action = np.argmax(self.Q[currentState])
+        sold = 0 if action==Actions.Buy.value else 1
 
-            r = reward(self.lastActionIndex,self.lastState[-1],prices,iterIndex, self.lastTrade)
-            Q[lastState][lastActionIndex] =  Q[lastState][lastActionIndex] + lr * (r + gamma *max(Q[currentState])  - Q[lastState][lastActionIndex])
-
-        self.lastActionIndex = action
+        self.lastAction = action
         self.lastState = currentState
-        self.lastTrade = prices[iterIndex]
+
+        if hasTraded(action, sold):
+            self.lastTrade = price
 
         return action, sold

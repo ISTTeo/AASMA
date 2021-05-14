@@ -1,3 +1,3 @@
 class Agent():
-    def decide(self, pastCloses, observation, sold, action):
+    def decide(self, pastCloses, observation, sold):
         raise NotImplementedError

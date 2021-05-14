@@ -4,11 +4,11 @@ from Agent import Agent
 
 class RndBot(Agent):
 
-    def decide(self, pastCloses,observation,sold,action):
+    def decide(self, pastCloses, observation, sold):
         action = random.getrandbits(1)
         if(action==0):
-            sold = True
+            sold = 1
         else:
-            sold = False
+            sold = 0
 
         return action, sold

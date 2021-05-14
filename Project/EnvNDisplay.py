@@ -13,13 +13,12 @@ def display(agentType):
 
     pastCloses = list(df['Close'][0:20])
     observation = env.reset()
-    sold = False
-    action = 0
+    sold = 0
     profit = []
     agent = agentType()
 
     while True:
-        action, sold = agent.decide(pastCloses,observation,sold,action)
+        action, sold = agent.decide(pastCloses,observation,sold)
 
         profit.append(env._total_profit)
 
