@@ -9,9 +9,9 @@ from gym_anytrading.datasets import FOREX_EURUSD_1H_ASK, STOCKS_GOOGL
 
 def display(agentType):
     df = pd.read_csv("FOREX_EURUSD_1H_ASK_DAILY.csv")
-    env = gym.make('forex-v0', df=df,frame_bound=(21, 200), window_size=1)
+    env = gym.make('forex-v0', df=df,frame_bound=(51, 200), window_size=1)
 
-    pastCloses = list(df['Close'][0:20])
+    pastCloses = list(df['Close'][0:50])
     observation = env.reset()
     sold = 0
     profit = []

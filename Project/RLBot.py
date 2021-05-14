@@ -30,8 +30,6 @@ def initQ():
             qEntries.append(str((timeInterval[0],-percentagesShort[k],timeInterval[1],-percentagesLong[i],1)))
             qEntries.append(str((timeInterval[0],percentagesShort[k],timeInterval[1],-percentagesLong[i],1)))
             qEntries.append(str((timeInterval[0],-percentagesShort[k],timeInterval[1],percentagesLong[i],1)))
-        
-
 
     qTable = {}
 
@@ -52,9 +50,9 @@ def egreedy(Q, eps=0.1):
 
     else:
         prob = np.zeros((N,))
-        min_indexes = np.where(Q == Q.min())
-        for i in min_indexes:
-            prob[i] = 1/len(min_indexes[0])
+        max_indexes = np.where(Q == Q.max())
+        for i in max_indexes:
+            prob[i] = 1/len(max_indexes[0])
         return rnd.choice(N, p = prob)
 
 def qLearning(n, prices, index):
@@ -145,9 +143,10 @@ class RLBot(Agent):
 
         if(self.lastState):
             r = reward(self.lastAction, sold, pastCloses, len(pastCloses) - 2, self.lastTrade)
-            self.Q[lastState][lastAction] =  self.Q[lastState][lastAction] + lr * (r + gamma * max(self.Q[currentState]) - self.Q[lastState][lastAction])
+            self.Q[self.lastState][self.lastAction] =  self.Q[self.lastState][self.lastAction] 
+            + lr * (r + gamma * max(self.Q[currentState]) - self.Q[self.lastState][self.lastAction])
         
-        action = np.argmax(self.Q[currentState])
+        action = self.chooseAction(self.Q[currentState])
         sold = 0 if action==Actions.Buy.value else 1
 
         self.lastAction = action
@@ -157,3 +156,13 @@ class RLBot(Agent):
             self.lastTrade = price
 
         return action, sold
+
+    def chooseAction(self, Q):
+        N = len(Q)
+        prob = np.zeros((N,))
+        max_indexes = np.where(Q == Q.max())
+
+        for i in max_indexes:
+            prob[i] = 1/len(max_indexes[0])
+
+        return rnd.choice(N, p = prob)
