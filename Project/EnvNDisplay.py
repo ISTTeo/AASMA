@@ -2,20 +2,31 @@ import gym
 import gym_anytrading
 import matplotlib.pyplot as plt
 import pandas as pd
+import pickle
 
 from gym_anytrading.envs import TradingEnv, ForexEnv, StocksEnv, Actions, Positions 
 from gym_anytrading.datasets import FOREX_EURUSD_1H_ASK, STOCKS_GOOGL
 
 
-def display(agentType):
-    df = pd.read_csv("FOREX_EURUSD_1H_ASK_DAILY.csv")
-    env = gym.make('forex-v0', df=df,frame_bound=(51, 200), window_size=1)
+def display(agentType, train=False, qFile=None):
+    df = pd.read_csv("EURCADDAILY.csv")
+    env = gym.make('forex-v0', df=df,frame_bound=(3101, 3465), window_size=1)
 
-    pastCloses = list(df['Close'][0:50])
+    pastCloses = list(df['Close'][3010:3100])
     observation = env.reset()
     sold = 0
     profit = []
     agent = agentType()
+
+    print(len(df['Close']))
+
+    if(train and agent.isRL()):
+        Q = agent.qLearning(3000, list(df['Close']), 50)
+        pickle.dump(Q, open("q.p", "wb"))
+    
+    elif(qFile and agent.isRL()):
+        Q = pickle.load(open(qFile, "rb"))
+        agent.loadQ(Q)
 
     while True:
         action, sold = agent.decide(pastCloses,observation,sold)
