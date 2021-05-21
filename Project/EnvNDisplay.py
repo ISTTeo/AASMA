@@ -8,21 +8,26 @@ from gym_anytrading.envs import TradingEnv, ForexEnv, StocksEnv, Actions, Positi
 from gym_anytrading.datasets import FOREX_EURUSD_1H_ASK, STOCKS_GOOGL
 
 
-def display(agentType, train=False, qFile=None):
-    df = pd.read_csv("EURCADDAILY.csv")
-    env = gym.make('forex-v0', df=df,frame_bound=(3101, 3465), window_size=1)
+nTrain = 3000
 
-    pastCloses = list(df['Close'][3010:3100])
+#lists of type [beginDay, endDay] for testing
+testSets = [[3100, 3465], [3465, 3830], [3830, 4195], [4195, 4560], [4560, 4925]]
+
+
+def display(agentType, train=False, qFile=None, testN=0):
+    df = pd.read_csv("EURCADDAILY.csv")
+    env = gym.make('forex-v0', df=df,frame_bound=(testSets[testN][0] + 1, testSets[testN][1]), window_size=1)
+
+    pastCloses = list(df['Close'][testSets[testN][0] - 60:testSets[testN][0]])
     observation = env.reset()
     sold = 0
     profit = []
     agent = agentType()
 
-    print(len(df['Close']))
-
     if(train and agent.isRL()):
-        Q = agent.qLearning(3000, list(df['Close']), 50)
-        pickle.dump(Q, open("q.p", "wb"))
+        Q = agent.qLearning(nTrain, list(df['Close']), 50)
+        fname = "q" + str(agent.agentType()) + ".p"
+        pickle.dump(Q, open(fname, "wb"))
     
     elif(qFile and agent.isRL()):
         Q = pickle.load(open(qFile, "rb"))
@@ -38,11 +43,8 @@ def display(agentType, train=False, qFile=None):
 
         if done:
             pastCloses.append(observation[0][0])
-            #print("info:", info)
             break
 
-    #print(pastCloses) #== 
-    #print(list(df['Close'][0:199]))
     plt.cla()
     env.render_all()
     plt.show()

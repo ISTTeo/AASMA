@@ -18,7 +18,7 @@ class Actions(Enum):
     Buy = 1
 
 
-class RLBot(Agent):
+class RLBot1(Agent):
     def __init__(self):
         self.state = []
         self.Q = self.initQ()
@@ -93,7 +93,6 @@ class RLBot(Agent):
             return rnd.choice(N, p = prob)
 
     def qLearning(self, n, prices, index):
-
         Q = self.initQ()
 
         s = self.getState(prices, index, 1)
@@ -127,27 +126,30 @@ class RLBot(Agent):
 
     def getState(self, prices, index, sold):
         var1 = round((prices[index]/prices[index - timeInterval[0]]) * 100 - 100)
+        var1Sign = -1 if(var1<0) else 1
         
-        var1 = (min(percentagesShort, key=lambda x:abs(x-var1)))
-        if(var1<0):
-            var1 *= -1
-        
-        if(abs(var1) > percentagesShort[-2]):
+        if(abs(var1) > (percentagesShort[-2] + 0.5)):
             var1 = 666
-        
-        var2 = round((prices[index]/prices[index - timeInterval[1]]) * 100 - 100)
+        else:    
+            var1 = (min(percentagesShort, key=lambda x:abs(x-var1)))
 
-        var2 = min(percentagesLong, key=lambda x:abs(x-var2))
+        var1 *= var1Sign
         
-        if(var2<0):
-            var2 *= -1
-        
-        if(abs(var2) > percentagesLong[-2]):
+        #----- var2 -----
+
+        var2 = round((prices[index]/prices[index - timeInterval[1]]) * 100 - 100)
+        var2Sign = -1 if(var2<0) else 1
+
+        if(abs(var2) > (percentagesLong[-2] + 0.5)):
             var2 = 666
+        else:
+            var2 = min(percentagesLong, key=lambda x:abs(x-var2))
+
+        var2 *= var2Sign
+        
 
         return str((timeInterval[0], var1, timeInterval[1], var2, sold))
 
-    #Roubado ao ambiente depois mudar sidjfaisdjfsa]
     def reward(self, action, sold, prices, index, last_trade):
         step_reward = 0
 
@@ -167,6 +169,9 @@ class RLBot(Agent):
 
     def isRL(self):
         return True
+
+    def agentType(self):
+        return 1
 
     def loadQ(self, qTable):
         self.Q = qTable
