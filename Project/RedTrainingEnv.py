@@ -2,20 +2,25 @@ import gym
 import gym_anytrading
 import matplotlib.pyplot as plt
 import pandas as pd
-
+import pickle 
 from gym_anytrading.envs import TradingEnv, ForexEnv, StocksEnv, Actions, Positions 
 from gym_anytrading.datasets import FOREX_EURUSD_1H_ASK, STOCKS_GOOGL
 
 from RndBot import *
 from TurtleBot import *
-from RLBot import *
+from RLBot2 import *
 
-def display(agentType):
-    #df = pd.read_csv("FOREX_EURUSD_1H_ASK_DAILY.csv")
-    df = pd.read_csv("EURCADDAILY.csv")
-    env = gym.make('forex-v0', df=df,frame_bound=(51, 3000), window_size=1)
+EPOCH_SIZE = 30
+DATAFILE = "EURCADDAILY.csv"
 
-    pastCloses = list(df['Close'][0:50])
+testSets = [[3100, 3465], [3465, 3830], [3830, 4195], [4195, 4560], [4560, 4925]]
+
+def display(agentType, testN=0):
+
+    df = pd.read_csv(DATAFILE)
+    env = gym.make('forex-v0', df=df,frame_bound=(testSets[testN][0] + 1, testSets[testN][1]), window_size=1)
+
+    pastCloses = list(df['Close'][testSets[testN][0] - 60:testSets[testN][0]])
     observation = env.reset()
     sold = 0
     previousSold = 0
@@ -26,23 +31,29 @@ def display(agentType):
     profits = []
     profitEpoch = 0
     steps = 0
+    
+    if(agent.isRL()):
+        qFile = "q" + str(agent.agentType()) + ".p"
+        Q = pickle.load(open(qFile, "rb"))
+        agent.loadQ(Q)
+
+
     while True:
         steps += 1
 
         previousSold = sold
         action, sold = agent.decide(pastCloses,observation,sold)
         
+        
         if(action==1 and previousSold==1):
+            #Save last time you bought
             bought = len(pastCloses)
-            #print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-            #print("Bought at " + str(observation[0][0]))
         elif(action==0 and previousSold==0):
-            #print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-            #print("Sold at " + str(observation[0][0]))
-            #print("Profit in trade " + str(observation[0][0] - pastCloses[bought]))
+            #Get profit using the last time you bought
             profitEpoch += observation[0][0] - pastCloses[bought]
         
-        if(steps == 200):
+        
+        if(steps == EPOCH_SIZE):
             profits.append(profitEpoch)
             steps = 0
             profitEpoch = 0
@@ -55,13 +66,6 @@ def display(agentType):
             pastCloses.append(observation[0][0]) 
             break
 
-    #print(pastCloses) #== 
-    #print(list(df['Close'][0:199]))
-    #plt.cla()
-    #env.render_all()
-    #plt.show()
-
-    #plotProfit(profit)
     return profits
 
 def plotProfit(profit):
@@ -71,4 +75,4 @@ def plotProfit(profit):
     plt.ylabel("Profit")
     plt.xlabel("Trading day")
     plt.show()
-#print("Turtle: " + str(turtleProfits))
+
