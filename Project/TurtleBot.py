@@ -10,10 +10,15 @@ class TurtleBot(Agent):
             if(sold):
                 action = 1 #buy
                 sold = 0
+            else:
+                action = 0 if sold else 1
+
         elif(lastClose < min20):
             if(not sold):
                 action = 0#sell
                 sold = 1
+            else:
+                action = 0 if sold else 1
 
         else:#hold
             action = 0 if sold else 1
