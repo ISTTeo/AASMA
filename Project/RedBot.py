@@ -1,8 +1,10 @@
 import numpy as np
 from scipy.special import softmax
 from RedTrainingEnv import *
-from RLBot import *
+from RLBot2 import *
+from RLBot1 import *
 from RndBot import *
+from TurtleBot import *
 
 class RedBot:
 
@@ -32,7 +34,7 @@ class RedBot:
         print(self.wealth)
 
 
-red = RedBot([RLBot, RndBot],1000)
+red = RedBot([RndBot, TurtleBot, RLBot1, RLBot2],1000)
 red.decide()
 
 
