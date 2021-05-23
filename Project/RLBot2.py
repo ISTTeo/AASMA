@@ -130,8 +130,6 @@ class RLBot2(Agent):
 
         var1 = max1 if(abs(max1) > abs(min1)) else min1
         var1Sign = -1 if(var1<0) else 1
-
-        print()
         
         if(abs(var1) > (percentagesShort[-2] + 0.5)):
             var1 = 666
@@ -140,8 +138,6 @@ class RLBot2(Agent):
             var1 = (min(percentagesShort, key=lambda x:abs(x-var1)))
 
         var1 *= var1Sign
-
-        print(var1)
         
 
         #------ var2 ------
@@ -160,10 +156,7 @@ class RLBot2(Agent):
             var2 = min(percentagesLong, key=lambda x:abs(x-var2))
 
         var2 *= var2Sign
-
-        print(var2)
         
-
         return str((timeInterval[0], var1, timeInterval[1], var2, sold))
 
     def reward(self, action, sold, prices, index, last_trade):
@@ -191,9 +184,3 @@ class RLBot2(Agent):
 
     def loadQ(self, qTable):
         self.Q = qTable
-
-        for key in qTable:
-            if(not all(qTable[key] == 0)):
-                print()
-                print(key)
-                print(qTable[key])
