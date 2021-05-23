@@ -26,21 +26,26 @@ class RedBot:
         self.weights = [.5 for i in range(len(bots))]
         self.wealth = initWealth
         self.bots = bots
-        self.profits = self.getProfits(testN)
+        self.trades = self.getTrades(testN)
         self.wealthHistory = [initWealth]
+        
 
     def decide(self):
+        print("WEIGHT" + str(self.weights) + "\n")
+        print("SOFTMAX WEIGHT" + str(softmax(self.weights)) + "\n")
         investments = softmax(self.weights)*self.wealth
-         
-        for eI in range(len(self.profits[0])):
+        print("INVESTMENT" + str(investments) + "\n")
+        for eI in range(len(self.trades[0])):
             for bI in range(len(self.bots)):
                 print(investments)
-                profit = self.profits[bI][eI]
-
-                self.wealth += investments[bI]*profit
-                if(profit > 1):
+                epochTrades = self.trades[bI][eI]
+                epochMoney = investments[bI]
+                self.wealth -= epochMoney
+                gotProfit, epochMoney = self.getEpochTradeResults(epochTrades,epochMoney)
+                self.wealth += epochMoney
+                if(gotProfit):
                     self.weights[bI] += 1
-                elif(profit < 1):
+                else:
                     self.weights[bI] -= 1
                 investments = softmax(self.weights)*self.wealth
             
@@ -48,13 +53,26 @@ class RedBot:
 
         
         return self.wealthHistory
+    
+    def getEpochTradeResults(self,trades,epochMoney):
+        initEpochMoney = epochMoney
+        for t in trades:
+            epochMoney += self.tradeResult(t,epochMoney)
 
-    def getProfits(self, testN):
-        profs = []
+        return epochMoney>initEpochMoney,epochMoney
+    def tradeResult(self,trade,investment):
+        nBought = investment//trade[0]
+        diff = trade[1]-trade[0]
+        return nBought*diff
+
+
+
+    def getTrades(self, testN):
+        trades = []
         for b in range(len(self.bots)):
-            profs.append(display(self.bots[b],testN=testN))
+            trades.append(display(self.bots[b],testN=testN))
 
-        return profs
+        return trades
 
 
 def wealthPerComb():
@@ -117,3 +135,5 @@ def wealthPerInterval():
 def redTest():
     wealthPerComb()
     wealthPerInterval()
+
+redTest()

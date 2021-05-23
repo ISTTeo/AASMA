@@ -19,17 +19,18 @@ def display(agentType, testN=0):
 
     df = pd.read_csv(DATAFILE)
     env = gym.make('forex-v0', df=df,frame_bound=(testSets[testN][0] + 1, testSets[testN][1]), window_size=1)
-
+    env.trade_fee=0
     pastCloses = list(df['Close'][testSets[testN][0] - 60:testSets[testN][0]])
     observation = env.reset()
     sold = 0
     previousSold = 0
     profit = []
     agent = agentType()
-    bought = 0 
+
+    buyPrice = pastCloses[-1]  
     
     profits = []
-    profitEpoch = 0
+    tradesEpoch = []
     steps = 0
     
     if(agent.isRL()):
@@ -47,23 +48,23 @@ def display(agentType, testN=0):
         
         if(action==1 and previousSold==1):
             #Save last time you bought
-            bought = len(pastCloses)
+            buyPrice = observation[0][0]
         elif(action==0 and previousSold==0):
             #Get profit using the last time you bought
-            profitEpoch += observation[0][0] - pastCloses[bought]
-        
+            
+            tradesEpoch.append((buyPrice,observation[0][0]))
         
         if(steps == EPOCH_SIZE):
-            profits.append(profitEpoch)
+            profits.append(tradesEpoch)
             steps = 0
-            profitEpoch = 0
+            tradesEpoch = []
 
         profit.append(env._total_profit)
         
         pastCloses.append(observation[0][0])
         observation, reward, done, info = env.step(action)
         if done:
-            pastCloses.append(observation[0][0]) 
+            #pastCloses.append(observation[0][0]) 
             break
 
     return profits
