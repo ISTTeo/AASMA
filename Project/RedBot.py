@@ -31,13 +31,12 @@ class RedBot:
         
 
     def decide(self):
-        print("WEIGHT" + str(self.weights) + "\n")
-        print("SOFTMAX WEIGHT" + str(softmax(self.weights)) + "\n")
+        
         investments = softmax(self.weights)*self.wealth
-        print("INVESTMENT" + str(investments) + "\n")
+        
         for eI in range(len(self.trades[0])):
             for bI in range(len(self.bots)):
-                print(investments)
+               
                 epochTrades = self.trades[bI][eI]
                 epochMoney = investments[bI]
                 self.wealth -= epochMoney
@@ -57,14 +56,17 @@ class RedBot:
     def getEpochTradeResults(self,trades,epochMoney):
         initEpochMoney = epochMoney
         for t in trades:
-            epochMoney += self.tradeResult(t,epochMoney)
-
+            if(epochMoney > 0):
+                epochMoney = self.tradeResult(t,epochMoney)
+                
+            else:
+                break;
         return epochMoney>initEpochMoney,epochMoney
+    
     def tradeResult(self,trade,investment):
         nBought = investment//trade[0]
-        diff = trade[1]-trade[0]
-        return nBought*diff
-
+        diff = trade[1]-trade[0] 
+        return nBought*diff + investment
 
 
     def getTrades(self, testN):
