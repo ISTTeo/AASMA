@@ -23,7 +23,7 @@ botLst = [RndBot, TurtleBot, RLBot1, RLBot2]
 
 colors = ['b','g','r','c','m','y']
 
-def display(agentType, train=False, qFile=None, testN=0, showDetails=False):
+def display(agentType, train=False, qFile=None, testN=0):
     df = pd.read_csv("EURCADDAILY.csv")
     env = gym.make('forex-v0', df=df,frame_bound=(testSets[testN][0] + 1, testSets[testN][1]), window_size=1)
 
@@ -42,7 +42,7 @@ def display(agentType, train=False, qFile=None, testN=0, showDetails=False):
         Q = pickle.load(open(qFile, "rb"))
         agent.loadQ(Q)
 
-    while True:
+    while(not train):
         action, sold = agent.decide(pastCloses,observation,sold)
 
         profit.append(env._total_profit)
@@ -53,11 +53,6 @@ def display(agentType, train=False, qFile=None, testN=0, showDetails=False):
         if done:
             pastCloses.append(observation[0][0])
             break
-
-    if(showDetails):
-        plt.cla()
-        env.render_all()
-        plt.show()
 
     return profit
 
