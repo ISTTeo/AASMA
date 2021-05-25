@@ -20,7 +20,6 @@ for L in range(1, len(botLst)+1):
     for subset in itertools.combinations(botLst, L):
         allCombs.append(subset)
 
-print(allCombs)
 
 class RedBot:
 
@@ -82,8 +81,8 @@ class RedBot:
         return trades
 
 
-def train(agent):
-    display(agent, train=True)
+def train(agent, seed=21):
+    display(agent, train=True, seed=seed)
 
 
 def test():
@@ -110,19 +109,9 @@ def test():
                         red = RedBot(comb, initWealth, testN=testN)
                         wealthHist[botnames] = [x + y for x, y in zip(wealthHist[botnames], red.decide())]
                     wealthHist[botnames] = [x/(i+1) for x in wealthHist[botnames]]
-
-                elif(comb[0] == TurtleBot):
+                else:
                     red = RedBot(comb, initWealth, testN=testN)
                     wealthHist[botnames] = red.decide()
-
-                else:
-                    botN = 1 if(comb[0] == RLBot1) else 2
-                    qFile = "q" + str(botN) + ".p"
-                    wealthHist[botnames] = [0 for n in range(intervalSize)]
-                    for i in range(rlIter):
-                        red = RedBot(comb, initWealth, testN=testN)
-                        wealthHist[botnames] = [x + y for x, y in zip(wealthHist[botnames], red.decide())]
-                    wealthHist[botnames] = [x/(i+1) for x in wealthHist[botnames]]
             else:
                 red = RedBot(comb, initWealth, testN=testN)
                 wealthHist[botnames] = red.decide()
@@ -232,4 +221,3 @@ def plotWealthPerInterval(setWealthHists):
             plt.savefig("graphs/Red_WpI_I" + str(iTest + 1) + "_" + length)
             plt.show()
 
-test()

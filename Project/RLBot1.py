@@ -58,7 +58,6 @@ class RLBot1(Agent):
         return rnd.choice(N, p = prob)
 
     def initQ(self):
-
         qEntries = []
         for k in range(len(percentagesShort)):
             for i in range(len(percentagesLong)):
@@ -175,3 +174,4 @@ class RLBot1(Agent):
 
     def loadQ(self, qTable):
         self.Q = qTable
+

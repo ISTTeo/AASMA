@@ -70,7 +70,7 @@ def redDisplay(agentType, testN=0):
 
     return profits
 
-def display(agentType, train=False, qFile=None, testN=0):
+def display(agentType, train=False, qFile=None, testN=0, seed=21):
     df = pd.read_csv("EURCADDAILY.csv")
     env = gym.make('forex-v0', df=df,frame_bound=(testSets[testN][0] + 1, testSets[testN][1]), window_size=1)
 
@@ -81,11 +81,13 @@ def display(agentType, train=False, qFile=None, testN=0):
     agent = agentType()
 
     if(train and agent.isRL()):
+        rnd.seed(seed) 
         Q = agent.qLearning(nTrain, list(df['Close']), 50)
         fname = "q" + str(agent.agentType()) + ".p"
         pickle.dump(Q, open(fname, "wb"))
     
     elif(qFile and agent.isRL()):
+        rnd.seed(seed)
         Q = pickle.load(open(qFile, "rb"))
         agent.loadQ(Q)
 
@@ -102,4 +104,3 @@ def display(agentType, train=False, qFile=None, testN=0):
             break
 
     return profit
-
