@@ -30,6 +30,7 @@ class RedBot:
         self.bots = bots
         self.trades = self.getTrades(testN)
         self.wealthHistory = [initWealth]
+        self.moneyChanges = []
         
 
     def decide(self):
@@ -58,7 +59,10 @@ class RedBot:
         initEpochMoney = epochMoney
         for t in trades:
             if(epochMoney > 0):
+                beforeTrade = epochMoney
                 epochMoney = self.tradeResult(t,epochMoney)
+                if(beforeTrade != epochMoney):
+                    self.moneyChanges.append((beforeTrade, epochMoney))
                 
             else:
                 break
@@ -91,7 +95,11 @@ def test():
     for testN in range(len(testSets)):
         wealthHist = {}
         print("------------------------------")
+        print("------------------------------")
         print("Interval " + str(testN + 1))
+        print("------------------------------")
+        print("------------------------------")
+        print()
         for comb in allCombs:
             botnames = str([i.__name__ for i in comb])
             print(botnames)
@@ -119,10 +127,44 @@ def test():
                 red = RedBot(comb, initWealth, testN=testN)
                 wealthHist[botnames] = red.decide()
 
+            trades = red.moneyChanges
+            wins = 0
+            wonAmount = 0
+            lostAmount = 0
+            largestWin = 0
+            largestLoss = 0
+
+            for t in trades:
+                change = t[1] - t[0]
+
+                if change > 0:
+                    wins += 1
+                    wonAmount += change
+                else:
+                    lostAmount += abs(change)
+
+                if change > largestWin:
+                    largestWin = change
+                if change <= 0 and abs(change) > largestLoss:
+                    largestLoss = abs(change)
+
+            largestWin = round(largestWin, 2)
+            largestLoss = round(largestLoss, 2)
+            percentWin = round(wins/len(trades) * 100, 2)
+            percentLose = round(100 - percentWin, 2)
+            avgWin = wonAmount/wins if wins > 0 else wonAmount
+            avgWin = round(avgWin, 2)
+            avgLoss = lostAmount/(len(trades) - wins) if (len(trades) - wins) > 0 else lostAmount
+            avgLoss = round(avgLoss, 2)
             profit = round(((wealthHist[botnames][-1] - wealthHist[botnames][0])/wealthHist[botnames][0]) * 100, 2)
             maxDrawdown = round(((wealthHist[botnames][0] - min(wealthHist[botnames]))/wealthHist[botnames][0]) * 100, 2)
+            
+            print("Number of Trades: " + str(len(trades)))
             print("Final Profit: " + str(profit) + "%")
             print("Maximum Drawdown: " + str(maxDrawdown) + "%")
+            print("Percentage of wins: " + str(percentWin) + "% | Percentage of losses: " + str(percentLose) + "%")
+            print("Average won amount: " + str(avgWin) + " | Average lost amount: " + str(avgLoss))
+            print("Largest won amount: " + str(largestWin) + " | Largest lost amount: " + str(largestLoss))
             print()
 
         print()
