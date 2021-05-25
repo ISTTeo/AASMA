@@ -143,7 +143,7 @@ def plotWealthPerComb(setWealthHists):
         names = str([i.__name__ for i in comb])
         plt.title("Agents: " + names)
         plt.xticks(xAxis)
-
+        
         for iTest in range(len(testSets)):
             wealthHistory = setWealthHists[iTest][names]
             plt.plot(xAxis,wealthHistory,colors[iTest])
@@ -163,19 +163,52 @@ def plotWealthPerInterval(setWealthHists):
     xAxis = [i*epochSize for i in range(nTicks) ] #Make sure x axis is lined up with epochs
 
     for iTest in range(len(testSets)):
-        patches = []
+        #lengths = [len(i) for i in allCombs]
+        byLen = {} 
         
-        plt.axhline(initWealth,0,360,color='k',linestyle='dashed')
-        plt.title("Interval: " + str(iTest+1))
-        plt.xticks(xAxis)
+        for i in range(len(allCombs)):
+            length = len(allCombs[i])
+            if(not(length in byLen.keys())):        
+                byLen[length] = []
+            byLen[length].append(allCombs[i])
 
+        
+        
+
+
+        for length in byLen.keys():
+            patches = []
+        
+            plt.axhline(initWealth,0,360,color='k',linestyle='dashed')
+            plt.title("Interval "+ str(iTest+1) + " for length " + str(length)) 
+            plt.xticks(xAxis)
+            
+            for iComb in range(len(byLen[length])):
+                comb = byLen[length][iComb]
+                names = str([i.__name__ for i in comb])
+                wealthHistory = setWealthHists[iTest][names] 
+                plt.plot(xAxis,wealthHistory,colors[iComb])
+                patches.append(mpatches.Patch(color=colors[iComb], label=names))
+            
+            patches.append(mpatches.Patch(color='k', label="Profit Threshold"))
+            plt.legend(handles=patches)
+            plt.ylabel("Wealth")
+            plt.xlabel("Time (days)")
+            xAxis = [i*epochSize for i in range(len(wealthHistory)) ] 
+            plt.xticks(xAxis)
+            plt.savefig("graphs/Red_WpI_I" + str(iTest + 1) + "_" + str(length+1))
+            plt.show()
+
+
+        """
         for iComb in range(len(allCombs)):
+            
             comb = allCombs[iComb]
             names = str([i.__name__ for i in comb])
             wealthHistory = setWealthHists[iTest][names]
             plt.plot(xAxis,wealthHistory,colors[iComb])
             patches.append(mpatches.Patch(color=colors[iComb], label=names))
-
+        
         patches.append(mpatches.Patch(color='k', label="Profit Threshold"))
         plt.legend(handles=patches)
         plt.ylabel("Wealth")
@@ -185,5 +218,5 @@ def plotWealthPerInterval(setWealthHists):
         
         plt.savefig("graphs/Red_WpI_I" + str(iTest + 1))
         plt.show()
-
+        """
 test()
