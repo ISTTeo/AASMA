@@ -86,6 +86,7 @@ def display(agentType, train=False, qFile=None, testN=0, seed=21):
         Q = agent.qLearning(nTrain, list(df['Close']), 50)
         fname = "q" + str(agent.agentType()) + ".p"
         pickle.dump(Q, open(fname, "wb"))
+        print("Agent " + agentType.__name__ + " was successfully trained.")
     
     elif(qFile and agent.isRL()):
         rnd.seed(seed)
