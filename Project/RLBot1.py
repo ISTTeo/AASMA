@@ -124,7 +124,7 @@ class RLBot1(Agent):
         return False
 
     def getState(self, prices, index, sold):
-        var1 = round((prices[index]/prices[index - timeInterval[0]]) * 100 - 100)
+        var1 = round(((prices[index] - prices[index - timeInterval[0]])/prices[index - timeInterval[0]]) * 100)
         var1Sign = -1 if(var1<0) else 1
         
         if(abs(var1) > (percentagesShort[-2] + 0.5)):
@@ -136,7 +136,7 @@ class RLBot1(Agent):
         
         #----- var2 -----
 
-        var2 = round((prices[index]/prices[index - timeInterval[1]]) * 100 - 100)
+        var2 = round(((prices[index] - prices[index - timeInterval[1]])/prices[index - timeInterval[1]]) * 100)
         var2Sign = -1 if(var2<0) else 1
 
         if(abs(var2) > (percentagesLong[-2] + 0.5)):

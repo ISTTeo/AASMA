@@ -7,8 +7,8 @@ from Agent import Agent
 
 
 timeInterval = [10,50]
-percentagesShort = [0.01, 0.02, 0.03, 666]
-percentagesLong = [0, 0.02, 0.04, 0.06, 666]
+percentagesShort = [0, 0.5, 1, 2, 666]
+percentagesLong = [1, 2, 3, 5, 666]
 lr = 0.1
 gamma = 0.9
 
@@ -123,13 +123,13 @@ class RLBot2(Agent):
         return False
 
     def getState(self, prices, index, sold):
-        var1 = [x - prices[index] for x in prices[index - timeInterval[0] : index]]
+        var1 = [((prices[index] - x)/x)*100 for x in prices[index - timeInterval[0] : index]]
         max1 = max(var1)
         min1 = min(var1)
 
         var1 = max1 if(abs(max1) > abs(min1)) else min1
         var1Sign = -1 if(var1<0) else 1
-        
+
         if(abs(var1) > (percentagesShort[-2] + 0.5)):
             var1 = 666
 
@@ -141,7 +141,7 @@ class RLBot2(Agent):
 
         #------ var2 ------
 
-        var2 = [x - prices[index] for x in prices[index - timeInterval[1] : index]]
+        var2 = [((prices[index] - x)/x)*100 for x in prices[index - timeInterval[1] : index]]
         max2 = max(var2)
         min2 = min(var2)
 
@@ -156,6 +156,7 @@ class RLBot2(Agent):
 
         var2 *= var2Sign
         
+
         return str((timeInterval[0], var1, timeInterval[1], var2, sold))
 
     def reward(self, action, sold, prices, index, last_trade):
