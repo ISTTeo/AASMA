@@ -27,7 +27,8 @@ def redDisplay(agentType, testN=0):
     previousSold = 0
     profit = []
     agent = agentType()
-
+    rnd.seed(21)
+    
     buyPrice = pastCloses[-1]  
     
     profits = []

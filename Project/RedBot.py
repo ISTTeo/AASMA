@@ -2,7 +2,7 @@ import numpy as np
 import itertools
 import matplotlib.patches as mpatches
 from scipy.special import softmax
-
+from scipy.stats import pearsonr
 from RedTrainingEnv import *
 from RLBot2 import *
 from RLBot1 import *
@@ -30,8 +30,9 @@ class RedBot:
         self.trades = self.getTrades(testN)
         self.wealthHistory = [initWealth]
         self.moneyChanges = []
-        
 
+        self.diffByBot = [[] for b in bots]
+        self.sellPricesByBot = [[] for b in bots]
     def decide(self):
         
         investments = softmax(self.weights)*self.wealth
@@ -44,6 +45,11 @@ class RedBot:
                 self.wealth -= epochMoney
                 gotProfit, epochMoney = self.getEpochTradeResults(epochTrades,epochMoney)
                 self.wealth += epochMoney
+                
+                for t in epochTrades:
+                    self.diffByBot[bI].append(t[1] - t[0])
+                    self.sellPricesByBot[bI].append(t[1])
+
                 if(gotProfit):
                     self.weights[bI] += 1
                 else:
@@ -52,7 +58,8 @@ class RedBot:
             
             self.wealthHistory.append(self.wealth)
 
-        return self.wealthHistory
+        
+        return self.wealthHistory, self.diffByBot,self.sellPricesByBot
     
     def getEpochTradeResults(self,trades,epochMoney):
         initEpochMoney = epochMoney
@@ -65,7 +72,7 @@ class RedBot:
                 
             else:
                 break
-        return epochMoney>initEpochMoney,epochMoney
+        return epochMoney>initEpochMoney, epochMoney
     
     def tradeResult(self,trade,investment):
         nBought = investment//trade[0]
@@ -100,21 +107,21 @@ def test():
         print("------------------------------")
         print()
         for comb in allCombs:
+            diffByBot, sellPricesByBot = [], []
             botnames = str([i.__name__ for i in comb])
-            print(botnames)
             if(len(comb) == 1):
                 if(comb[0] == RndBot):
                     wealthHist[botnames] = [0 for n in range(intervalSize)]
                     for i in range(randIter):
                         red = RedBot(comb, initWealth, testN=testN)
-                        wealthHist[botnames] = [x + y for x, y in zip(wealthHist[botnames], red.decide())]
+                        wealthHist[botnames] = [x + y for x, y in zip(wealthHist[botnames], red.decide()[0])]
                     wealthHist[botnames] = [x/(i+1) for x in wealthHist[botnames]]
                 else:
                     red = RedBot(comb, initWealth, testN=testN)
-                    wealthHist[botnames] = red.decide()
+                    wealthHist[botnames], diffByBot, sellPricesByBot = red.decide()
             else:
                 red = RedBot(comb, initWealth, testN=testN)
-                wealthHist[botnames] = red.decide()
+                wealthHist[botnames], _, _ = red.decide()
 
             trades = red.moneyChanges
             wins = 0
@@ -154,6 +161,17 @@ def test():
             print("Percentage of wins: " + str(percentWin) + "% | Percentage of losses: " + str(percentLose) + "%")
             print("Average won amount: " + str(avgWin) + " | Average lost amount: " + str(avgLoss))
             print("Largest won amount: " + str(largestWin) + " | Largest lost amount: " + str(largestLoss))
+            if(diffByBot!=[]):
+                for bI in range(len(comb)):
+                    corr, _ = pearsonr(diffByBot[bI], sellPricesByBot[bI])
+                    corr = round(corr,2)
+                    if(corr < 0.5 and corr > -0.5):
+                        print(str(comb[bI].__name__) + " is not strongly correlated with with trading price :" + str(corr))
+                    elif(corr >= 0.5):
+                        print(str(comb[bI].__name__) + " is strongly correlated (+) with with trading price:" + str(corr))
+                    else:
+                        print(str(comb[bI].__name__) + " is strongly correlated (-) with with trading price:" + str(corr))
+
             print()
 
         print()
@@ -221,3 +239,4 @@ def plotWealthPerInterval(setWealthHists):
             plt.savefig("graphs/Red_WpI_I" + str(iTest + 1) + "_" + length)
             plt.show()
 
+test()
