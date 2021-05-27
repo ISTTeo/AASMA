@@ -240,6 +240,19 @@ def getMaxDrawdown(history):
 
 def saveMetrics():
     metrics = test(shouldPlot=False, shouldPrint=False, returnVals=True)
+
+    for m in metrics:
+        for comb in allCombs:
+            botnames = str([i.__name__ for i in comb])
+            n = len(metrics[m][botnames])
+            if(n != 0):
+                tot = 0
+                for i in range(n):
+                    tot += metrics[m][botnames][i]
+                avg = tot/n
+                avg = round(avg, 2)
+                metrics[m][botnames].append(avg)
+
     savedMetrics = open("savedMetrics.pickle","wb")
     pickle.dump(metrics, savedMetrics)
     savedMetrics.close()
