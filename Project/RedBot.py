@@ -93,7 +93,7 @@ def train(agent, seed=21):
     display(agent, train=True, seed=seed)
 
 
-def test(shouldPlot=True,shouldPrint=True):
+def test(shouldPlot=True,shouldPrint=True, returnVals=False):
     setWealthHists = {}
     intervalSize = testSets[0][1] - testSets[0][0]
     randIter = 100
@@ -111,12 +111,14 @@ def test(shouldPlot=True,shouldPrint=True):
 
     for testN in range(len(testSets)):
         wealthHist = {}
-        print("------------------------------")
-        print("------------------------------")
-        print("Interval " + str(testN + 1))
-        print("------------------------------")
-        print("------------------------------")
-        print()
+        if(shouldPrint):
+            print("------------------------------")
+            print("------------------------------")
+            print("Interval " + str(testN + 1))
+            print("------------------------------")
+            print("------------------------------")
+            print()
+
         for comb in allCombs:
             diffByBot, sellPricesByBot = [], []
             botnames = str([i.__name__ for i in comb])
@@ -164,7 +166,7 @@ def test(shouldPlot=True,shouldPrint=True):
             avgLoss = lostAmount/(len(trades) - wins) if (len(trades) - wins) > 0 else lostAmount
             avgLoss = round(avgLoss, 2)
             profit = round(((wealthHist[botnames][-1] - wealthHist[botnames][0])/wealthHist[botnames][0]) * 100, 2)
-            maxDrawdown = round(((wealthHist[botnames][0] - min(wealthHist[botnames]))/wealthHist[botnames][0]) * 100, 2)
+            maxDrawdown = round(getMaxDrawdown(wealthHist[botnames]), 2)
             
             metrics["drawdown"][botnames].append(maxDrawdown)
             metrics["pWin"][botnames].append(percentWin)
@@ -194,20 +196,48 @@ def test(shouldPlot=True,shouldPrint=True):
                             print("\t" + str(comb[bI].__name__) + " is strongly correlated (+) with with trading price:" + str(corr))
                         else:
                             print("\t" + str(comb[bI].__name__) + " is strongly correlated (-) with with trading price:" + str(corr))
-
+            if(shouldPrint):
+                print()
+        if(shouldPrint):
             print()
-
-        print()
         setWealthHists[testN] = wealthHist
     
     if(shouldPlot):
         plotWealthPerInterval(setWealthHists)
         plotWealthPerComb(setWealthHists)
-    
-    return metrics
+
+    if(returnVals):
+        return metrics
+
+
+def getMaxDrawdown(history):
+    maxs = [initWealth for i in range(len(history))]
+    mins = [initWealth for i in range(len(history))]
+
+    minVal = initWealth
+    maxVal = initWealth
+
+    mdd = 0
+
+    for i in range(len(history)):
+        if(history[i] < minVal):
+            minVal = history[i]
+        elif(history[i] > maxVal):
+            maxVal = history[i]
+
+        maxs[i] = maxVal
+        mins[i] = minVal
+
+    for i in range(len(history)):
+        dd = ((maxs[i] - mins[i]) / maxs[i]) * 100
+        if(dd > mdd):
+            mdd = dd
+
+    return mdd
+
 
 def saveMetrics():
-    metrics = test(shouldPlot=False, shouldPrint=False)
+    metrics = test(shouldPlot=False, shouldPrint=False, returnVals=True)
     savedMetrics = open("savedMetrics.pickle","wb")
     pickle.dump(metrics, savedMetrics)
     savedMetrics.close()
