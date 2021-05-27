@@ -1,4 +1,5 @@
 import numpy as np
+import pickle
 import itertools
 import matplotlib.patches as mpatches
 from scipy.special import softmax
@@ -92,11 +93,21 @@ def train(agent, seed=21):
     display(agent, train=True, seed=seed)
 
 
-def test():
+def test(shouldPlot=True,shouldPrint=True):
     setWealthHists = {}
     intervalSize = testSets[0][1] - testSets[0][0]
     randIter = 100
     rlIter = 10
+    
+    
+    metrics = {"drawdown":{},"correlation":{},"pWin":{},"pLoss":{},"highWin":{},"highLoss":{},"avgWin":{},"avgLoss":{}}
+    
+    for metric in metrics.keys():
+        for comb in allCombs:
+            botnames = str([i.__name__ for i in comb])
+            metrics[metric][botnames] = []
+
+    #print("METRICS " + str(metrics))
 
     for testN in range(len(testSets)):
         wealthHist = {}
@@ -155,31 +166,51 @@ def test():
             profit = round(((wealthHist[botnames][-1] - wealthHist[botnames][0])/wealthHist[botnames][0]) * 100, 2)
             maxDrawdown = round(((wealthHist[botnames][0] - min(wealthHist[botnames]))/wealthHist[botnames][0]) * 100, 2)
             
-            print("Number of Trades: " + str(len(trades)))
-            print("Final Profit: " + str(profit) + "%")
-            print("Maximum Drawdown: " + str(maxDrawdown) + "%")
-            print("Percentage of wins: " + str(percentWin) + "% | Percentage of losses: " + str(percentLose) + "%")
-            print("Average won amount: " + str(avgWin) + " | Average lost amount: " + str(avgLoss))
-            print("Largest won amount: " + str(largestWin) + " | Largest lost amount: " + str(largestLoss))
+            metrics["drawdown"][botnames].append(maxDrawdown)
+            metrics["pWin"][botnames].append(percentWin)
+            metrics["pLoss"][botnames].append(percentLose)
+            metrics["avgWin"][botnames].append(avgWin)
+            metrics["avgLoss"][botnames].append(avgLoss)
+            metrics["highWin"][botnames].append(largestWin)
+            metrics["highLoss"][botnames].append(largestLoss)
+            if(shouldPrint):
+                print("Agents: " + botnames)
+                print("\tNumber of Trades: " + str(len(trades)))
+                print("\tFinal Profit: " + str(profit) + "%")
+                print("\tMaximum Drawdown: " + str(maxDrawdown) + "%")
+                print("\tPercentage of wins: " + str(percentWin) + "% | Percentage of losses: " + str(percentLose) + "%") 
+                print("\tAverage won amount: " + str(avgWin) + " | Average lost amount: " + str(avgLoss))
+                print("\tLargest won amount: " + str(largestWin) + " | Largest lost amount: " + str(largestLoss))
+            
             if(diffByBot!=[]):
                 for bI in range(len(comb)):
                     corr, _ = pearsonr(diffByBot[bI], sellPricesByBot[bI])
                     corr = round(corr,2)
-                    if(corr < 0.5 and corr > -0.5):
-                        print(str(comb[bI].__name__) + " is not strongly correlated with with trading price :" + str(corr))
-                    elif(corr >= 0.5):
-                        print(str(comb[bI].__name__) + " is strongly correlated (+) with with trading price:" + str(corr))
-                    else:
-                        print(str(comb[bI].__name__) + " is strongly correlated (-) with with trading price:" + str(corr))
+                    metrics["correlation"][botnames].append(corr)
+                    if(shouldPrint):
+                        if(corr < 0.5 and corr > -0.5):
+                            print("\t" + str(comb[bI].__name__) + " is not strongly correlated with with trading price :" + str(corr))
+                        elif(corr >= 0.5):
+                            print("\t" + str(comb[bI].__name__) + " is strongly correlated (+) with with trading price:" + str(corr))
+                        else:
+                            print("\t" + str(comb[bI].__name__) + " is strongly correlated (-) with with trading price:" + str(corr))
 
             print()
 
         print()
         setWealthHists[testN] = wealthHist
     
-    plotWealthPerInterval(setWealthHists)
-    plotWealthPerComb(setWealthHists)
+    if(shouldPlot):
+        plotWealthPerInterval(setWealthHists)
+        plotWealthPerComb(setWealthHists)
+    
+    return metrics
 
+def saveMetrics():
+    metrics = test(shouldPlot=False, shouldPrint=False)
+    savedMetrics = open("savedMetrics.pickle","wb")
+    pickle.dump(metrics, savedMetrics)
+    savedMetrics.close()
 
 def plotWealthPerComb(setWealthHists):
     nTicks = intervalSize//epochSize + 1
@@ -239,4 +270,4 @@ def plotWealthPerInterval(setWealthHists):
             plt.savefig("graphs/Red_WpI_I" + str(iTest + 1) + "_" + length)
             plt.show()
 
-test()
+
