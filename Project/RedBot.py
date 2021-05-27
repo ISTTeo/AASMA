@@ -100,7 +100,7 @@ def test(shouldPlot=True,shouldPrint=True, returnVals=False):
     rlIter = 10
     
     
-    metrics = {"drawdown":{},"correlation":{},"pWin":{},"pLoss":{},"highWin":{},"highLoss":{},"avgWin":{},"avgLoss":{}}
+    metrics = {"nTrades":{},"profit":{},"drawdown":{},"correlation":{},"pWin":{},"pLoss":{},"highWin":{},"highLoss":{},"avgWin":{},"avgLoss":{}}
     
     for metric in metrics.keys():
         for comb in allCombs:
@@ -168,6 +168,8 @@ def test(shouldPlot=True,shouldPrint=True, returnVals=False):
             profit = round(((wealthHist[botnames][-1] - wealthHist[botnames][0])/wealthHist[botnames][0]) * 100, 2)
             maxDrawdown = round(getMaxDrawdown(wealthHist[botnames]), 2)
             
+            metrics["nTrades"][botnames].append(len(trades))
+            metrics["profit"][botnames].append(profit)
             metrics["drawdown"][botnames].append(maxDrawdown)
             metrics["pWin"][botnames].append(percentWin)
             metrics["pLoss"][botnames].append(percentLose)
